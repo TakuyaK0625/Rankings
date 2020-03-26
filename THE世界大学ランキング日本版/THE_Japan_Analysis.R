@@ -39,7 +39,7 @@ D <- bind_rows(d2018, d2019, d2020) %>%
 
 # ========================================================
 #
-# Exploratory Analysis
+# 各指標の特徴
 #
 # ========================================================
 
@@ -48,7 +48,7 @@ D <- bind_rows(d2018, d2019, d2020) %>%
 # 各指標の分布（boxplot） 
 # ----------------------
 
-# 特定大学
+# ハイライトする大学
 univ <- D %>% filter(year == 2020) %>%
     filter(大学 == "信州大学")
 
@@ -90,7 +90,7 @@ bind_rows(d2018, d2019, d2020) %>%
 
 
 # ----------------------
-# 取り出したい大学の指定 
+# 特徴を見たい大学の指定 
 # ----------------------
 
 univ <- "信州大学"
@@ -158,10 +158,9 @@ dev.off()
 
 # ========================================================
 #
-# 各大学の特徴をループで取得
+# 各大学の特徴をループで取得＆画像として書き出し
 #
 # ========================================================
-
 
 
 # 100位以内の大学名
@@ -215,33 +214,3 @@ grid.arrange(radar, yearly, nrow = 1, top = Title)
 dev.off()
 
 }
-
-
-# ========================================================
-#
-# 各大学の国際性指標
-#
-# ========================================================
-
-# 特定大学
-univ <- d2020 %>% 
-    filter(大学 == "信州大学") %>%
-    select(大学, 外国人学生比率:海外大学間交流協定数) %>%
-    mutate_at(vars(外国人学生比率:海外大学間交流協定数), as.numeric) %>%
-    pivot_longer(cols = 外国人学生比率:海外大学間交流協定数, names_to = "type", values_to = "value") 
-    
-
-
-# 2020国際性指標
-d2020 %>% select(大学, 外国人学生比率:海外大学間交流協定数) %>%
-    mutate_at(vars(外国人学生比率:海外大学間交流協定数), as.numeric) %>%
-    pivot_longer(cols = 外国人学生比率:海外大学間交流協定数, names_to = "type", values_to = "value") %>%
-    ggplot(aes(x = 1, y = value)) +
-    geom_boxplot(fill = "skyblue", alpha = 0.5) +
-    geom_point(data = univ, aes(x = 1, y = value), color = "red", size = 3) +
-    theme_bw(base_family = "HiraKakuPro-W3") +
-    theme(axis.text.y = element_blank(),
-          axis.ticks.y = element_blank()) +
-    coord_flip() +
-    facet_wrap(.~type, scales = "free", nrow = 5, strip.position = "left") +
-    xlab("") + ylab("")
