@@ -210,8 +210,8 @@ d2019 &lt;- fread(&quot;../data/THE日本大学ランキング2019.csv&quot;, st
 d2020 &lt;- fread(&quot;../data/THE日本大学ランキング2020.csv&quot;, stringsAsFactors = F) %&gt;% mutate(year = 2020) %&gt;% select(-リンク)</code></pre>
 <p>データの構成は以下の通りです。</p>
 <pre class="r"><code>head(d2020) %&gt;% datatable(rownames = F)</code></pre>
-<div id="htmlwidget-fcf7d19e9b2c6123e52f" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-fcf7d19e9b2c6123e52f">{"x":{"filter":"none","data":[["1","2","=3","=3","5","6"],["東北大学","京都大学","東京大学","東京工業大学","九州大学","北海道大学"],["宮城県","京都府","東京都","東京都","福岡県","北海道"],["83.0","81.5","81.2","81.2","79.7","79.6"],["84.1","83.4","86.5","80.1","76.4","73.8"],["80.6","78.7","79.8","80.8","79.9","83.4"],["96.6","98.4","94.1","92.8","97.4","94.1"],["73.9","69.1","64.0","74.5","70.9","72.3"],[2020,2020,2020,2020,2020,2020]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Rank<\/th>\n      <th>大学<\/th>\n      <th>都道府県<\/th>\n      <th>総合<\/th>\n      <th>教育リソース<\/th>\n      <th>教育充実度<\/th>\n      <th>教育成果<\/th>\n      <th>国際性<\/th>\n      <th>year<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":8}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-a2867b47e1d1692fa6f6" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a2867b47e1d1692fa6f6">{"x":{"filter":"none","data":[["1","2","=3","=3","5","6"],["東北大学","京都大学","東京大学","東京工業大学","九州大学","北海道大学"],["宮城県","京都府","東京都","東京都","福岡県","北海道"],["83.0","81.5","81.2","81.2","79.7","79.6"],["84.1","83.4","86.5","80.1","76.4","73.8"],["80.6","78.7","79.8","80.8","79.9","83.4"],["96.6","98.4","94.1","92.8","97.4","94.1"],["73.9","69.1","64.0","74.5","70.9","72.3"],[2020,2020,2020,2020,2020,2020]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Rank<\/th>\n      <th>大学<\/th>\n      <th>都道府県<\/th>\n      <th>総合<\/th>\n      <th>教育リソース<\/th>\n      <th>教育充実度<\/th>\n      <th>教育成果<\/th>\n      <th>国際性<\/th>\n      <th>year<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":8}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="データのクリーニングと整形" class="section level3">
 <h3>データのクリーニングと整形</h3>
@@ -378,7 +378,7 @@ radar &lt;- D %&gt;% filter(大学 == i) %&gt;%
 # ２つにまとめて出力
 Title &lt;- textGrob(i, gp=gpar(fontfamily = &quot;HiraKakuPro-W3&quot;))
 
-png(paste0(&quot;IMG&quot;, i, &quot;.png&quot;), width = 3240, height = 1620, res = 216)
+png(paste0(&quot;IMG/&quot;, i, &quot;.png&quot;), width = 3240, height = 1620, res = 216)
 grid.arrange(radar, yearly, nrow = 1, top = Title)
 dev.off()
 
