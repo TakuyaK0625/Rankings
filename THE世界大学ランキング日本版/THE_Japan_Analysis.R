@@ -15,6 +15,7 @@ library(ggplot2)
 library(GGally)
 library(gridExtra)
 library(data.table)
+library(readxl)
 
 # -----------------
 # データインポート 
@@ -45,15 +46,15 @@ D <- bind_rows(d2018, d2019, d2020) %>%
 
 
 # ----------------------
-# 各指標の分布（boxplot） 
+# 各指標の分布（2020年のみ） 
 # ----------------------
 
-# ハイライトする大学
+# 特定大学
 univ <- D %>% filter(year == 2020) %>%
-    filter(大学 == "信州大学")
+    filter(大学 == "信州大学", type != "総合")
 
 # 描画
-D %>% filter(year == 2020) %>% 
+D %>% filter(year == 2020, type != "総合") %>% 
     ggplot(aes(x = type, y = value, fill = type)) +
     geom_boxplot(na.rm = T, alpha = 0.5) +
     theme_bw(base_family = "HiraKakuPro-W3") +
@@ -66,7 +67,7 @@ D %>% filter(year == 2020) %>%
 
 
 # ----------------------
-# 指標間の関係 
+# 指標間の関係 （2020年のみ）
 # ----------------------
 
 d2020 %>%
@@ -89,10 +90,28 @@ d2020 %>%
 
 
 # ----------------------
-# 特徴を見たい大学の指定 
+# 可視化したい大学の指定 
 # ----------------------
 
 univ <- "信州大学"
+
+
+# ----------------------
+# 順位の経年変化
+# ----------------------
+
+Line <- D %>% filter(type == "総合") %>%
+    mutate(value = ifelse(is.na(value), 0, value)) %>%
+    filter(大学 == univ) %>%
+    mutate(Rank = as.numeric(Rank)) %>%
+    ggplot(aes(x = year, y = Rank, group = 大学)) +
+    geom_point(size = 3, color = "#FF9999") +
+    geom_line(size = 1, color = "#FF9999") + scale_y_continuous(limits = c(0,100)) +
+    geom_text(aes(label = Rank, y = ifelse(Rank < 70, Rank + 5, Rank -5)), size = 10, color = "#FF9999") +
+    theme_bw(base_family = "HiraKakuPro-W3") +
+    theme(panel.border = element_blank(), axis.line = element_line()) +
+    xlab("Year")
+
 
 # ----------------------
 # レーダーチャート 
@@ -111,7 +130,7 @@ coord_radar <- function (theta = "x", start = 0, direction = 1) {
 
 # 描画
 
-radar <- D %>% filter(大学 == univ) %>%
+Radar <- D %>% filter(大学 == univ) %>%
     mutate(value = ifelse(is.na(value), 0, value)) %>%
     ggplot(aes(x = type, y = value, group = year)) +
     geom_polygon(aes(color = year), fill = NA, alpha = 0.5) +
@@ -129,35 +148,18 @@ radar <- D %>% filter(大学 == univ) %>%
 
 
 # ----------------------
-# 順位の経年変化
-# ----------------------
-
-yearly <- D %>% filter(type == "総合") %>%
-    mutate(value = ifelse(is.na(value), 0, value)) %>%
-    filter(大学 == univ) %>%
-    mutate(Rank = as.numeric(Rank)) %>%
-    ggplot(aes(x = year, y = Rank, group = 大学)) +
-    geom_point(size = 3, color = "#FF9999") +
-    geom_line(size = 1, color = "#FF9999") + scale_y_continuous(limits = c(0,100)) +
-    geom_text(aes(label = Rank, y = ifelse(Rank < 70, Rank + 5, Rank -5)), size = 10, color = "#FF9999") +
-    theme_bw(base_family = "HiraKakuPro-W3") +
-    theme(panel.border = element_blank(), axis.line = element_line()) +
-    xlab("Year")
-
-
-# ----------------------
 # グラフをまとめて出力
 # ----------------------
 
 png(paste0(univ, ".png"), width = 3240, height = 1620, res = 216)
-grid.arrange(radar, yearly, nrow = 1)
+grid.arrange(Line, Radar, nrow = 1)
 dev.off()
 
 
 
 # ========================================================
 #
-# 各大学の特徴をループで取得＆画像として書き出し
+# 各大学の特徴をループで取得
 #
 # ========================================================
 
@@ -167,49 +169,102 @@ univs <- D %>% filter(year == 2020, type == "総合", Rank %in% c(1:100)) %>% .$
 
 # ループ開始
 for(i in univs){
-
-radar <- D %>% filter(大学 == i) %>%
-    mutate(value = ifelse(is.na(value), 0, value)) %>%
-    ggplot(aes(x = type, y = value, group = year)) +
-    geom_polygon(aes(color = year), fill = NA, alpha = 0.5) +
-    geom_point(aes(color = year), size = 1, alpha = 0.5) +
-    theme_bw(base_family = "HiraKakuPro-W3") +
-    theme(axis.ticks = element_blank(),
-          axis.text.y = element_blank(),
-          axis.text.x = element_text(size = 13),
-          legend.title = element_blank(),
-          legend.text = element_text(size = 15),
-          panel.border = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 25),
-          legend.position = "top", legend.direction = "horizontal") +
-    coord_radar(start = 5.65) + ylab("") + xlab("") + scale_y_continuous(limits = c(0, 100))
-
-
-# ----------------------
-# 順位の経年変化
-# ----------------------
-
-yearly <- D %>% filter(type == "総合") %>%
-    mutate(value = ifelse(is.na(value), 0, value)) %>%
-    filter(大学 == i) %>%
-    mutate(Rank = as.numeric(Rank)) %>%
-    ggplot(aes(x = year, y = Rank, group = 大学)) +
-    geom_point(size = 3, color = "#FF9999") +
-    geom_line(size = 1, color = "#FF9999") + scale_y_continuous(limits = c(0,100)) +
-    geom_text(aes(label = Rank, y = ifelse(Rank < 70, Rank + 5, Rank -5)), size = 10, color = "#FF9999") +
-    theme_bw(base_family = "HiraKakuPro-W3") +
-    theme(panel.border = element_blank(), axis.line = element_line()) +
-    xlab("Year")
-
+    
+    Line <- D %>% filter(type == "総合") %>%
+        mutate(value = ifelse(is.na(value), 0, value)) %>%
+        filter(大学 == i) %>%
+        mutate(Rank = as.numeric(Rank)) %>%
+        ggplot(aes(x = year, y = Rank, group = 大学)) +
+        geom_point(size = 3, color = "#FF9999") +
+        geom_line(size = 1, color = "#FF9999") + scale_y_continuous(limits = c(0,100)) +
+        geom_text(aes(label = Rank, y = ifelse(Rank < 70, Rank + 5, Rank -5)), size = 10, color = "#FF9999") +
+        theme_bw(base_family = "HiraKakuPro-W3") +
+        theme(panel.border = element_blank(), axis.line = element_line()) +
+        xlab("Year")
+    
+    Radar <- D %>% filter(大学 == i) %>%
+        mutate(value = ifelse(is.na(value), 0, value)) %>%
+        ggplot(aes(x = type, y = value, group = year)) +
+        geom_polygon(aes(color = year), fill = NA, alpha = 0.5) +
+        geom_point(aes(color = year), size = 1, alpha = 0.5) +
+        theme_bw(base_family = "HiraKakuPro-W3") +
+        theme(axis.ticks = element_blank(),
+              axis.text.y = element_blank(),
+              axis.text.x = element_text(size = 13),
+              legend.title = element_blank(),
+              legend.text = element_text(size = 15),
+              panel.border = element_blank(),
+              plot.title = element_text(hjust = 0.5, size = 25),
+              legend.position = "top", 
+              legend.direction = "horizontal") +
+        coord_radar(start = 5.65) + 
+        ylab("") + xlab("") + 
+        scale_y_continuous(limits = c(0, 100))
 
 # ----------------------
 # グラフをまとめて出力
 # ----------------------
 
-Title <- textGrob(i, gp=gpar(fontfamily = "HiraKakuPro-W3"))
-
-png(paste0("image/", i, ".png"), width = 3240, height = 1620, res = 216)
-grid.arrange(radar, yearly, nrow = 1, top = Title)
-dev.off()
+    Title <- textGrob(i, gp=gpar(fontfamily = "HiraKakuPro-W3"))
+    png(paste0("image/", i, ".png"), width = 3240, height = 1620, res = 216)
+    grid.arrange(Line, Radar, nrow = 1, top = Title)
+    dev.off()
 
 }
+
+
+# ========================================================
+#
+# 各大学の国際性指標
+#
+# ========================================================
+
+# 特定大学
+univ <- d2020 %>% 
+    filter(大学 == "信州大学") %>%
+    select(大学, 外国人学生比率:海外大学間交流協定数) %>%
+    mutate_at(vars(外国人学生比率:海外大学間交流協定数), as.numeric) %>%
+    pivot_longer(cols = 外国人学生比率:海外大学間交流協定数, names_to = "type", values_to = "value") 
+    
+
+
+# 2020国際性指標
+d2020 %>% select(大学, 外国人学生比率:海外大学間交流協定数) %>%
+    mutate_at(vars(外国人学生比率:海外大学間交流協定数), as.numeric) %>%
+    pivot_longer(cols = 外国人学生比率:海外大学間交流協定数, names_to = "type", values_to = "value") %>%
+    ggplot(aes(x = 1, y = value)) +
+    geom_boxplot(fill = "skyblue", alpha = 0.5) +
+    geom_point(data = univ, aes(x = 1, y = value), color = "red", size = 3) +
+    theme_bw(base_family = "HiraKakuPro-W3") +
+    theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank()) +
+    coord_flip() +
+    facet_wrap(.~type, scales = "free", nrow = 5, strip.position = "left") +
+    xlab("") + ylab("")
+
+
+# ========================================================
+#
+# 外国人教員比率
+#
+# ========================================================
+
+total <- read_excel("2018_07go_1.xlsx", skip = 3) %>% filter(区分 == "外国人") %>% select(学校名, 区分, 計_計)
+foreign <- read_excel("2018_07go_B.xlsx", skip = 3) %>% filter(学部名 == "計") %>% select(学校名, 計_計)
+D <- total %>% left_join(foreign, by = "学校名") %>%
+    mutate(外国人比率 = 100 * 計_計.x/計_計.y)
+
+univ <- D %>% filter(学校名 == "信州大学")
+
+
+d2020 %>% left_join(D, by = c("大学" = "学校名")) %>% 
+    fwrite("外国人教員割合.csv")
+    
+    filter(is.na(外国人比率))
+    ggplot(aes(x = "", y = 外国人比率)) +
+    geom_boxplot(fill = "skyblue", alpha = 0.5) +
+    coord_flip() +
+    theme_bw(base_family = "HiraKakuPro-W3") +
+    geom_point(data = univ, aes(x = "", y = 外国人比率), color = "red", size = 5) +
+    ylab("") + xlab("")
+
