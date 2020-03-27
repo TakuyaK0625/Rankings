@@ -69,10 +69,9 @@ D %>% filter(year == 2020) %>%
 # 指標間の関係 
 # ----------------------
 
-bind_rows(d2018, d2019, d2020) %>%
+d2020 %>%
     mutate(Rank = str_replace(Rank, "=", "")) %>%
     mutate(group = ifelse(Rank %in% c(1:100), "1-100", "100< ")) %>%
-    filter(year == 2020) %>%
     select(group, 教育リソース:国際性) %>%
     mutate_at(.vars = -1, as.numeric) %>%
     ggpairs(aes(color = group, alpha = 0.5), columns = 2:5,
