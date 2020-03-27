@@ -201,9 +201,9 @@ for(i in univs){
         ylab("") + xlab("") + 
         scale_y_continuous(limits = c(0, 100))
 
-# ----------------------
-# グラフをまとめて出力
-# ----------------------
+    # ----------------------
+    # グラフをまとめて出力
+    # ----------------------
 
     Title <- textGrob(i, gp=gpar(fontfamily = "HiraKakuPro-W3"))
     png(paste0("image/", i, ".png"), width = 3240, height = 1620, res = 216)
@@ -211,60 +211,3 @@ for(i in univs){
     dev.off()
 
 }
-
-
-# ========================================================
-#
-# 各大学の国際性指標
-#
-# ========================================================
-
-# 特定大学
-univ <- d2020 %>% 
-    filter(大学 == "信州大学") %>%
-    select(大学, 外国人学生比率:海外大学間交流協定数) %>%
-    mutate_at(vars(外国人学生比率:海外大学間交流協定数), as.numeric) %>%
-    pivot_longer(cols = 外国人学生比率:海外大学間交流協定数, names_to = "type", values_to = "value") 
-    
-
-
-# 2020国際性指標
-d2020 %>% select(大学, 外国人学生比率:海外大学間交流協定数) %>%
-    mutate_at(vars(外国人学生比率:海外大学間交流協定数), as.numeric) %>%
-    pivot_longer(cols = 外国人学生比率:海外大学間交流協定数, names_to = "type", values_to = "value") %>%
-    ggplot(aes(x = 1, y = value)) +
-    geom_boxplot(fill = "skyblue", alpha = 0.5) +
-    geom_point(data = univ, aes(x = 1, y = value), color = "red", size = 3) +
-    theme_bw(base_family = "HiraKakuPro-W3") +
-    theme(axis.text.y = element_blank(),
-          axis.ticks.y = element_blank()) +
-    coord_flip() +
-    facet_wrap(.~type, scales = "free", nrow = 5, strip.position = "left") +
-    xlab("") + ylab("")
-
-
-# ========================================================
-#
-# 外国人教員比率
-#
-# ========================================================
-
-total <- read_excel("2018_07go_1.xlsx", skip = 3) %>% filter(区分 == "外国人") %>% select(学校名, 区分, 計_計)
-foreign <- read_excel("2018_07go_B.xlsx", skip = 3) %>% filter(学部名 == "計") %>% select(学校名, 計_計)
-D <- total %>% left_join(foreign, by = "学校名") %>%
-    mutate(外国人比率 = 100 * 計_計.x/計_計.y)
-
-univ <- D %>% filter(学校名 == "信州大学")
-
-
-d2020 %>% left_join(D, by = c("大学" = "学校名")) %>% 
-    fwrite("外国人教員割合.csv")
-    
-    filter(is.na(外国人比率))
-    ggplot(aes(x = "", y = 外国人比率)) +
-    geom_boxplot(fill = "skyblue", alpha = 0.5) +
-    coord_flip() +
-    theme_bw(base_family = "HiraKakuPro-W3") +
-    geom_point(data = univ, aes(x = "", y = 外国人比率), color = "red", size = 5) +
-    ylab("") + xlab("")
-
