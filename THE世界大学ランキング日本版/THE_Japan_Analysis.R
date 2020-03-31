@@ -163,6 +163,7 @@ dev.off()
 #
 # ========================================================
 
+# 予め画像保存先「IMG」フォルダを作っておく            
 
 # 100位以内の大学名
 univs <- D %>% filter(year == 2020, type == "総合", Rank %in% c(1:100)) %>% .$大学
@@ -206,7 +207,7 @@ for(i in univs){
     # ----------------------
 
     Title <- textGrob(i, gp=gpar(fontfamily = "HiraKakuPro-W3"))
-    png(paste0("image/", i, ".png"), width = 3240, height = 1620, res = 216)
+    png(paste0("IMG/", i, ".png"), width = 3240, height = 1620, res = 216)
     grid.arrange(Line, Radar, nrow = 1, top = Title)
     dev.off()
 
